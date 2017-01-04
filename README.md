@@ -13,4 +13,4 @@ asdf plugin-add racket https://github.com/nverno/asdf-racket.git
 ## Use
 
 Check [asdf](https://github.com/asdf-vm/asdf) readme for instructions on how to
-install & manage versions of R.
+install & manage versions of Racket.
