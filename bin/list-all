@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+sort_cmd='sort'
+if sort --help | grep -q -- '-V'; then
+  sort_cmd='sort -V'
+fi
+
+uri="https://download.racket-lang.org/all-versions.html"
+ver=$(curl -s $uri | grep -Po "(?<=Version )[0-9.]+" | uniq | $sort_cmd)
+echo $ver

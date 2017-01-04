@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+set -e
+
+install_racket() {
+    local install_type=$1
+    local version=$2
+    local install_path=$3
+    
+    if [ "$TMPDIR" = "" ]; then
+        local tmp_download_dir=$(mktemp -d)
+    else
+        local tmp_download_dir=$TMPDIR
+    fi
+
+    local os="$(_get_os)"
+    if [ "$os" == "linux" ]; then
+        local ext=sh
+    else 
+        echo "FIXME: Dont know how to install on macosx"
+        exit 1
+        local ext=dmg
+    fi
+    local arch="$(_get_arch)"
+    local installer=racket-$version-$arch-$os.$ext
+    local uri="https://mirror.racket-lang.org/installers/$version/$installer"
+
+    # bash <( curl -Ls $uri ) --dest "$install_path" --create-dir --in-place
+    # build
+    (
+        cd "$tmp_download_dir"
+        curl -Lo $installer $uri
+        chmod +x $installer
+        rm -rf "$install_path"
+        ./$installer --dest "$install_path" --in-place --create-dir
+    )
+}
+
+_get_arch() {
+    local _arch="UNKNOWN"
+    case "$(_get_os)" in
+        macosx) [ "$(sysctl hw.cpu64bit_capable | awk '{print $2}')" == "1" ] &&
+                      _arch=x86_64 || _arch=x86;;
+        linux)    _arch=`uname -m 2> /dev/null`;;
+        *)        _arch="UNKNOWN";;
+    esac
+    echo $_arch
+}
+
+_get_os() {
+    local _ossig=`uname -s 2> /dev/null | tr "[:upper:]" "[:lower:]" 2> /dev/null`
+    local _os_base="UNKNOWN"
+    case "$_ossig" in
+        *darwin*) _os_base="macosx";;
+        *linux*)  _os_base="linux";;
+        *)        _os_base="UNKNOWN";;
+    esac
+    echo $_os_base
+}
+
+install_racket $ASDF_INSTALL_TYPE $ASDF_INSTALL_VERSION $ASDF_INSTALL_PATH
